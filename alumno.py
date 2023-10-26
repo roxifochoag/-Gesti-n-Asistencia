@@ -13,31 +13,35 @@ cursor = conn.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT,
+    apellido TEXT,
     codigo TEXT,
     rostro BLOB
 )''')
 conn.commit()
 
 class Alumno:
-    def __init__(self, nombre, codigo):
+    def __init__(self, nombre,apellido, codigo):
         self.nombre = nombre
         self.codigo = codigo
+        self.apellido = apellido
         self.rostro = None
 
 # Función para registrar un alumno en la base de datos
 def registrar_alumno():
     nombre = nombre_entry.get()
+    apellido = apellido_entry.get()
     codigo = codigo_entry.get()
-
-    if not nombre or not codigo:
-        messagebox.showerror("Error", "Ingresa el nombre y el código del alumno.")
+    if not nombre or not codigo or not apellido:
+        messagebox.showerror("Error", "Ingresa el nombre, apellido y el código del alumno.")
         return
 
     alumno.nombre = nombre
     alumno.codigo = codigo
+    alumno.apellido = apellido
+    
 
-    cursor.execute("INSERT INTO alumnos (nombre, codigo, rostro) VALUES (?, ?, ?)",
-                   (alumno.nombre, alumno.codigo, alumno.rostro))
+    cursor.execute("INSERT INTO alumnos (nombre, codigo,apellido, rostro) VALUES (?,?, ?, ?)",
+                   (alumno.nombre, alumno.codigo, alumno.rostro,alumno.apellido))
     conn.commit()
     messagebox.showinfo("Éxito", "Alumno registrado con éxito")
 
@@ -74,7 +78,7 @@ def capturar_rostro():
 
 # Crear una ventana Tkinter
 root = tk.Tk()
-root.title("Sistema de Registro de Rostros de Alumnos")
+root.title("Sistema de Registro de Asistencia facial de Alumnos")
 
 # Aplicar un estilo de ttkthemes
 style = ThemedStyle(root)
@@ -94,21 +98,27 @@ nombre_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 nombre_entry = ttk.Entry(frame)
 nombre_entry.grid(row=0, column=1, padx=5, pady=5)
 
+apellido_label = ttk.Label(frame, text="Apellido del Alumno:")
+apellido_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+apellido_entry = ttk.Entry(frame)
+apellido_entry.grid(row=1, column=1, padx=5, pady=5)
+
 codigo_label = ttk.Label(frame, text="Código del Alumno:")
-codigo_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+codigo_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
 codigo_entry = ttk.Entry(frame)
-codigo_entry.grid(row=1, column=1, padx=5, pady=5)
+codigo_entry.grid(row=2, column=1, padx=5, pady=5)
 
 # Botón para registrar al alumno
 registrar_button = ttk.Button(frame, text="Registrar Alumno", command=registrar_alumno)
-registrar_button.grid(row=2, columnspan=2, pady=10)
+registrar_button.grid(row=3, columnspan=2, pady=10)
 
 # Botón para capturar el rostro del alumno
 capturar_button = ttk.Button(root, text="Capturar Rostro", command=capturar_rostro)
 capturar_button.pack(pady=10)
 
 # Crea un objeto Alumno
-alumno = Alumno("", "")
+alumno = Alumno("", "","")
 
 root.mainloop()
