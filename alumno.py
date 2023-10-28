@@ -4,10 +4,15 @@ from tkinter import ttk, messagebox
 import sqlite3
 from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
+from datetime import datetime
 
 # Conectar a la base de datos SQLite
 conn = sqlite3.connect("alumnos.db")
 cursor = conn.cursor()
+
+# Eliminar la tabla existente si existe
+cursor.execute("DROP TABLE IF EXISTS alumnos")
+conn.commit()
 
 # Crear una tabla para almacenar los datos de los alumnos
 cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
@@ -15,7 +20,9 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
     nombre TEXT,
     apellido TEXT,
     codigo TEXT,
-    rostro BLOB
+    rostro BLOB,
+    ingreso TIME,
+    estado TEXT
 )''')
 conn.commit()
 
@@ -25,6 +32,8 @@ class Alumno:
         self.codigo = codigo
         self.apellido = apellido
         self.rostro = None
+        self.ingreso = None 
+        self.estado = None 
 
 # Función para registrar un alumno en la base de datos
 def registrar_alumno():
@@ -39,9 +48,20 @@ def registrar_alumno():
     alumno.codigo = codigo
     alumno.apellido = apellido
     
+    #obtenemos la hora actual 
+    hora_actual = datetime.now()
+    alumno.ingreso = hora_actual.strftime("%H:%M:%S")
+    print(alumno.ingreso)
+    #en que estado esta el alumno? llego a tiempo o no
 
-    cursor.execute("INSERT INTO alumnos (nombre, codigo,apellido, rostro) VALUES (?,?, ?, ?)",
-                   (alumno.nombre, alumno.codigo, alumno.rostro,alumno.apellido))
+    if "07:00:00" <= alumno.ingreso <= "08:15:00":
+        alumno.estado = "Temprano"
+    elif alumno.ingreso > "08:15:00":
+        alumno.estado = "Tarde"
+
+    print(alumno.estado)
+    cursor.execute("INSERT INTO alumnos (nombre, codigo,apellido, rostro, ingreso, estado) VALUES (?,?, ?, ?,?,?)",
+                   (alumno.nombre, alumno.codigo, alumno.rostro,alumno.apellido,alumno.ingreso,alumno.estado))
     conn.commit()
     messagebox.showinfo("Éxito", "Alumno registrado con éxito")
 
@@ -111,7 +131,7 @@ codigo_entry = ttk.Entry(frame)
 codigo_entry.grid(row=2, column=1, padx=5, pady=5)
 
 # Botón para registrar al alumno
-registrar_button = ttk.Button(frame, text="Registrar Alumno", command=registrar_alumno)
+registrar_button = ttk.Button(frame, text="Registrar asistencia", command=registrar_alumno)
 registrar_button.grid(row=3, columnspan=2, pady=10)
 
 # Botón para capturar el rostro del alumno
